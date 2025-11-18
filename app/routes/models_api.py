@@ -19,25 +19,28 @@ async def list_models(fastapi_request: Request, api_key: str = Depends(get_api_k
     current_time = int(time.time())
 
     def add_model_and_variants(base_id: str, prefix: str):
-        """Adds a model to the list if not already present."""
+        """Adds a model and its variants to the list if not already present."""
         
-        # 直接使用基础模型，不生成任何后缀变体
-        model_id_with_suffix = base_id  # 直接使用基础ID，不加任何后缀
+        # 只使用基础模型，不生成任何后缀变体
+        suffixes = [""]  # 只包含空字符串，表示不添加任何后缀
+        
+        for suffix in suffixes:
+            model_id_with_suffix = f"{base_id}{suffix}"
             
-        # Experimental models have no prefix
-        final_id = f"{prefix}{model_id_with_suffix}" if "-exp-" not in base_id else model_id_with_suffix
+            # Experimental models have no prefix
+            final_id = f"{prefix}{model_id_with_suffix}" if "-exp-" not in base_id else model_id_with_suffix
 
-        if final_id not in processed_ids:
-            final_model_list.append({
-                "id": final_id,
-                "object": "model",
-                "created": current_time,
-                "owned_by": "google",
-                "permission": [],
-                "root": base_id,
-                "parent": None
-            })
-            processed_ids.add(final_id)
+            if final_id not in processed_ids:
+                final_model_list.append({
+                    "id": final_id,
+                    "object": "model",
+                    "created": current_time,
+                    "owned_by": "google",
+                    "permission": [],
+                    "root": base_id,
+                    "parent": None
+                })
+                processed_ids.add(final_id)
 
     # Process Express Key models first
     if has_express_key:
