@@ -12,7 +12,7 @@ async def list_models(fastapi_request: Request, api_key: str = Depends(get_api_k
     await refresh_models_config_cache()
     
     PAY_PREFIX = "[PAY]"
-    EXPRESS_PREFIX = "[EXPRESS] "
+    EXPRESS_PREFIX = " "
     OPENAI_DIRECT_SUFFIX = "-openai"
     OPENAI_SEARCH_SUFFIX = "-openaisearch"
     
@@ -32,16 +32,9 @@ async def list_models(fastapi_request: Request, api_key: str = Depends(get_api_k
     def add_model_and_variants(base_id: str, prefix: str):
         """Adds a model and its variants to the list if not already present."""
         
-        # Define all possible suffixes for a given model
-        suffixes = [""] # For the base model itself
-        if not base_id.startswith("gemini-2.0"):
-            suffixes.extend(["-search", "-encrypt", "-encrypt-full", "-auto"])
         if "gemini-2.5-flash" in base_id or "gemini-2.5-pro" == base_id or "gemini-2.5-pro-preview-06-05" == base_id:
             suffixes.extend(["-nothinking", "-max"])
-        
-        # Add the openai variant for all models
-        suffixes.append(OPENAI_DIRECT_SUFFIX)
-        suffixes.append(OPENAI_SEARCH_SUFFIX)
+
 
         for suffix in suffixes:
             model_id_with_suffix = f"{base_id}{suffix}"
