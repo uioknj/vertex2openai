@@ -12,7 +12,7 @@ async def list_models(fastapi_request: Request, api_key: str = Depends(get_api_k
     await refresh_models_config_cache()
     
     PAY_PREFIX = "[PAY]"
-    EXPRESS_PREFIX = " "
+    EXPRESS_PREFIX = "[EXPRESS] "
     OPENAI_DIRECT_SUFFIX = "-openai"
     OPENAI_SEARCH_SUFFIX = "-openaisearch"
     
