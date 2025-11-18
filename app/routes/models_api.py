@@ -1,9 +1,20 @@
+import time
+from fastapi import APIRouter, Depends, Request
+from typing import List, Dict, Any, Set
+from auth import get_api_key
+from model_loader import get_vertex_models, get_vertex_express_models, refresh_models_config_cache
+from credentials_manager import CredentialManager
+
+router = APIRouter()
+
 @router.get("/v1/models")
 async def list_models(fastapi_request: Request, api_key: str = Depends(get_api_key)):
     await refresh_models_config_cache()
     
     PAY_PREFIX = "[PAY]"
-    EXPRESS_PREFIX = ""  # 改为空字符串，取消 [EXPRESS] 前缀
+    EXPRESS_PREFIX = " "
+    OPENAI_DIRECT_SUFFIX = "-openai"
+    OPENAI_SEARCH_SUFFIX = "-openaisearch"
     
     credential_manager_instance: CredentialManager = fastapi_request.app.state.credential_manager
     express_key_manager_instance = fastapi_request.app.state.express_key_manager
@@ -21,9 +32,17 @@ async def list_models(fastapi_request: Request, api_key: str = Depends(get_api_k
     def add_model_and_variants(base_id: str, prefix: str):
         """Adds a model and its variants to the list if not already present."""
         
-        # 只使用基础模型，不生成任何后缀变体
-        suffixes = [""]  # 只包含空字符串，表示不添加任何后缀
+        # Define all possible suffixes for a given model
+        suffixes = [""] # For the base model itself
+        if not base_id.startswith("gemini-2.0"):
+            suffixes.extend(["-search", "-encrypt", "-encrypt-full", "-auto"])
+        if "gemini-2.5-flash" in base_id or "gemini-2.5-pro" == base_id or "gemini-2.5-pro-preview-06-05" == base_id:
+            suffixes.extend(["-nothinking", "-max"])
         
+        # Add the openai variant for all models
+        suffixes.append(OPENAI_DIRECT_SUFFIX)
+        suffixes.append(OPENAI_SEARCH_SUFFIX)
+
         for suffix in suffixes:
             model_id_with_suffix = f"{base_id}{suffix}"
             
